@@ -1,0 +1,37 @@
+{
+  "builders" : [{
+    "type": "virtualbox-iso",
+    "guest_os_type": "RedHat_64",
+    "hard_drive_interface": "sata",
+    "headless": "false",
+    "guest_additions_mode": "attach",
+    "vboxmanage": [
+      ["modifyvm", "{{.Name}}", "--memory", "1024"],
+      ["modifyvm", "{{.Name}}", "--paravirtprovider", "none"]
+    ],
+    "iso_url": "http://ftp-stud.fht-esslingen.de/pub/Mirrors/centos/6/isos/x86_64/CentOS-6.8-x86_64-netinstall.iso",
+    "iso_checksum": "56d9cc5757ed1443af7b321967622a108978328f72e58050d31bcf1998dfd162",
+    "iso_checksum_type": "sha256",
+    "boot_command": [
+      "<tab><spacebar>",
+      "ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/centos6.ks<return>"
+    ],
+    "http_directory": ".",
+    "ssh_username": "vagrant",
+    "ssh_private_key_file": "insecure_private_key",
+    "ssh_timeout": "60m",
+    "shutdown_command": "sudo poweroff"
+  }],
+  "provisioners": [{
+    "type": "shell",
+    "inline": [
+      "set -e -x -o pipefail",
+      "sudo lsblk -flo NAME,LABEL | awk '/VBOXADDITIONS/ { print $1 }' | xargs -I DEVICE sudo mount -t iso9660 /dev/DEVICE /mnt",
+      "(cd /mnt && sudo sh ./VBoxLinuxAdditions.run)"
+    ]
+  }],
+  "post-processors": [{
+    "type": "vagrant",
+    "output": "packer_CentOS6_{{.BuildName}}_{{.Provider}}.box"
+  }]
+}

@@ -1,5 +1,7 @@
 #repo http://mirror.centos.org/centos/7/os/x86_64/
 install
+url --url http://mirror.centos.org/centos/7/os/x86_64/
+repo --name updates --baseurl=http://mirror.centos.org/centos/7/updates/x86_64/
 text
 keyboard us
 lang en_US.UTF-8
@@ -14,17 +16,28 @@ timezone --utc UTC
 # even in environments like virtualbox that emulate a real NW card
 bootloader --location=mbr --append="no_timer_check console=tty0 console=ttyS0,115200 net.ifnames=0 biosdevname=0"
 zerombr
-clearpart --all --drives=vda
+clearpart --all --drives=sda
 
 user --name=vagrant --password=vagrant
 
 part biosboot --fstype=biosboot --size=1
-part /boot --fstype ext4 --size=500 --ondisk=vda
-part pv.2 --size=1 --grow --ondisk=vda
+part /boot --fstype ext4 --size=500 --ondisk=sda
+part pv.2 --size=1 --grow --ondisk=sda
 volgroup VolGroup00 --pesize=32768 pv.2
 logvol swap --fstype swap --name=LogVol01 --vgname=VolGroup00 --size=768 --grow --maxsize=1536
 logvol / --fstype ext4 --name=LogVol00 --vgname=VolGroup00 --size=1024 --grow
 reboot
+
+%pre
+#!/bin/sh
+:>/tmp/additional-packages
+dmidecode -s system-product-name | grep VirtualBox >&/dev/null
+if [ $? -eq 0 ] ; then cat > /tmp/additional-packages <<-EOF; fi
+	gcc
+	make
+	kernel-devel
+EOF
+%end
 
 %packages
 deltarpm
@@ -37,6 +50,7 @@ screen
 nfs-utils
 chrony
 yum-utils
+%include /tmp/additional-packages
 
 %end
 
