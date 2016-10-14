@@ -21,11 +21,11 @@ clearpart --all --drives=sda
 user --name=vagrant --password=vagrant
 
 part biosboot --fstype=biosboot --size=1
-part /boot --fstype ext4 --size=500 --ondisk=sda
+part /boot --fstype xfs --size=500 --ondisk=sda
 part pv.2 --size=1 --grow --ondisk=sda
 volgroup VolGroup00 --pesize=32768 pv.2
 logvol swap --fstype swap --name=LogVol01 --vgname=VolGroup00 --size=768 --grow --maxsize=1536
-logvol / --fstype ext4 --name=LogVol00 --vgname=VolGroup00 --size=1024 --grow
+logvol / --fstype xfs --name=LogVol00 --vgname=VolGroup00 --size=1024 --grow
 reboot
 
 %pre
@@ -104,7 +104,7 @@ sed -i 's/^GRUB_TIMEOUT=[0-9]\+$/GRUB_TIMEOUT=1/' /etc/default/grub && grub2-mkc
 # Enable VMware PVSCSI support for VMware Fusion guests. This produces
 # a tiny increase in the image and is harmless for other environments.
 pushd /etc/dracut.conf.d
-echo 'add_drivers+="mptspi"' > vmware-fusion-drivers.conf
+echo 'add_drivers+=" mptspi "' > vmware-fusion-drivers.conf
 popd
 # Rerun dracut for the installed kernel (not the running kernel):
 KERNEL_VERSION=$(rpm -q kernel --qf '%{version}-%{release}.%{arch}\n')
