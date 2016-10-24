@@ -4,7 +4,6 @@
     "guest_os_type": "RedHat_64",
     "hard_drive_interface": "sata",
     "headless": "false",
-    "guest_additions_mode": "attach",
     "vboxmanage": [
       ["modifyvm", "{{.Name}}", "--memory", "1024"],
       ["modifyvm", "{{.Name}}", "--paravirtprovider", "none"]
@@ -25,8 +24,8 @@
   "provisioners": [{
     "type": "shell",
     "inline": [
-      "set -e -x -o pipefail",
-      "sudo lsblk -flo NAME,LABEL | awk '/VBOXADDITIONS/ { print $1 }' | xargs -I DEVICE sudo mount -t iso9660 /dev/DEVICE /mnt",
+      "set -e -x",
+      "sudo mount -o loop -t iso9660 VBoxGuestAdditions.iso /mnt",
       "(cd /mnt && sudo sh ./VBoxLinuxAdditions.run)"
     ]
   }],
