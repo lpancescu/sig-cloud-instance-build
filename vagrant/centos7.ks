@@ -55,6 +55,12 @@ yum-utils
 %end
 
 %post
+# VirtualBox Guest Additions need DKMS (until version 5.1.x)
+dmidecode -s system-product-name | grep VirtualBox >&/dev/null
+if [ $? -eq 0 ] ; then
+	yum -y install epel-release
+	yum -y install dkms
+fi
 
 # sudo
 echo "%vagrant ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers.d/vagrant
