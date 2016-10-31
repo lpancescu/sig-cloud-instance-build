@@ -49,6 +49,34 @@ rsync
 screen
 nfs-utils
 tuned
+# Microcode updates cannot work in a VM
+-microcode_ctl
+# Firmware packages are not needed in a VM
+-aic94xx-firmware
+-atmel-firmware
+-bfa-firmware
+-ipw2100-firmware
+-ipw2200-firmware
+-ivtv-firmware
+-iwl100-firmware
+-iwl1000-firmware
+-iwl3945-firmware
+-iwl4965-firmware
+-iwl5000-firmware
+-iwl5150-firmware
+-iwl6000-firmware
+-iwl6000g2a-firmware
+-iwl6050-firmware
+-libertas-usb8388-firmware
+-ql2100-firmware
+-ql2200-firmware
+-ql23xx-firmware
+-ql2400-firmware
+-ql2500-firmware
+-rt61pci-firmware
+-rt73usb-firmware
+-xorg-x11-drv-ati-firmware
+-zd1211-firmware
 %include /tmp/additional-packages
 
 %end
@@ -75,18 +103,18 @@ PERSISTENT_DHCLIENT="yes"
 EOF
 
 # sshd: disable password authentication and DNS checks
-ex -s /etc/ssh/sshd_config <<-EOF
-	:%substitute/^\(PasswordAuthentication\) yes$/\1 no/
-	:%substitute/^#\(UseDNS\) yes$/&\r\1 no/
-	:update
-	:quit
+ex -s /etc/ssh/sshd_config <<EOF
+:%substitute/^\(PasswordAuthentication\) yes$/\1 no/
+:%substitute/^#\(UseDNS\) yes$/&\r\1 no/
+:update
+:quit
 EOF
-cat >>/etc/sysconfig/sshd <<-EOF
+cat >>/etc/sysconfig/sshd <<EOF
 
-	# Decrease connection time by preventing reverse DNS lookups
-	# (see https://lists.centos.org/pipermail/centos-devel/2016-July/014981.html
-	#  and man sshd for more information)
-	OPTIONS="-u0"
+# Decrease connection time by preventing reverse DNS lookups
+# (see https://lists.centos.org/pipermail/centos-devel/2016-July/014981.html
+#  and man sshd for more information)
+OPTIONS="-u0"
 EOF
 
 # Default insecure vagrant key
@@ -97,6 +125,19 @@ chown -R vagrant:vagrant /home/vagrant/.ssh
 # Workaround for SSH pubkey auth not working, due to .ssh having the
 # wrong SELinux context (see "Known Issues" in the CentOS 6 release notes)
 restorecon -vR /home/vagrant/.ssh
+
+# Fix for issue #76, regular users can gain admin privileges via su
+ex -s /etc/pam.d/su <<'EOF'
+/^account\s\+sufficient\s\+pam_succeed_if.so uid = 0 use_uid quiet$/
+:append
+# allow vagrant to use su, but prevent others from becoming root or vagrant
+account		[success=1 default=ignore] \\
+				pam_succeed_if.so user = vagrant use_uid quiet
+account		required	pam_succeed_if.so user notin root:vagrant
+.
+:update
+:quit
+EOF
 
 # Indicate that vagrant6 infra is being used
 echo 'vag' > /etc/yum/vars/infra
@@ -112,6 +153,10 @@ sed -i 's/^timeout=[0-9]\+$/timeout=1/' /boot/grub/grub.conf
 pushd /etc/dracut.conf.d
 echo 'add_drivers+=" mptspi "' > vmware-fusion-drivers.conf
 popd
+# Fix the SELinux context of the new files
+restorecon -f - <<EOF
+/etc/dracut.conf.d/vmware-fusion-drivers.conf
+EOF
 # Rerun dracut for the installed kernel (not the running kernel):
 KERNEL_VERSION=$(rpm -q kernel --qf '%{version}-%{release}.%{arch}\n')
 dracut -f /boot/initramfs-${KERNEL_VERSION}.img ${KERNEL_VERSION}
