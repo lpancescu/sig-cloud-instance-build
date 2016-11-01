@@ -54,7 +54,7 @@
     "iso_checksum": "9ed9ffb5d89ab8cca834afce354daa70a21dcb410f58287d6316259ff89758f5",
     "iso_checksum_type": "sha256",
     "boot_command": [
-      "<tab><spacebar>",
+      "<up><tab><spacebar>",
       "inst.ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/centos7.ks<return>"
     ],
     "http_directory": ".",
