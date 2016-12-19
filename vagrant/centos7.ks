@@ -21,7 +21,7 @@ clearpart --all --drives=sda
 user --name=vagrant --password=vagrant
 
 part biosboot --fstype=biosboot --size=1
-part /boot --fstype xfs --size=500 --ondisk=sda
+part /boot --fstype xfs --size=1024 --ondisk=sda
 part pv.2 --size=1 --grow --ondisk=sda
 volgroup VolGroup00 --pesize=32768 pv.2
 logvol swap --fstype swap --name=LogVol01 --vgname=VolGroup00 --size=768 --grow --maxsize=1536
@@ -96,7 +96,6 @@ fi
 
 # sudo
 echo "%vagrant ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers.d/vagrant
-sed -i "s/^.*requiretty/#Defaults requiretty/" /etc/sudoers
 
 # Fix for https://github.com/CentOS/sig-cloud-instance-build/issues/38
 cat > /etc/sysconfig/network-scripts/ifcfg-eth0 << EOF
@@ -165,6 +164,7 @@ echo 'omit_drivers+=" floppy "' > nofloppy.conf
 popd
 # Fix the SELinux context of the new files
 restorecon -f - <<EOF
+/etc/sudoers.d/vagrant
 /etc/dracut.conf.d/vmware-fusion-drivers.conf
 /etc/dracut.conf.d/nofloppy.conf
 EOF
