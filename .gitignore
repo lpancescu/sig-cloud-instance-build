@@ -1,4 +1,5 @@
 .project
 *~
 vagrant/*.box
+vagrant/*.log
 vagrant/packer_cache/
