@@ -76,6 +76,8 @@ yum-utils
 -iwl7265-firmware
 # Don't build rescue initramfs
 -dracut-config-rescue
+# Disable kdump
+-kexec-tools
 %include /tmp/additional-packages
 
 %end
