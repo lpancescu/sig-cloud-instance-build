@@ -3,9 +3,9 @@
     "name": "centos-6",
     "type": "virtualbox-iso",
     "guest_os_type": "RedHat_64",
-    "hard_drive_interface": "sata",
+    "hard_drive_interface": "ide",
     "headless": "false",
-    "iso_interface": "sata",
+    "iso_interface": "ide",
     "vboxmanage": [
       ["modifyvm", "{{.Name}}", "--memory", "1024"],
       ["modifyvm", "{{.Name}}", "--cpus", "1"],
@@ -34,9 +34,9 @@
     "name": "centos-7",
     "type": "virtualbox-iso",
     "guest_os_type": "RedHat_64",
-    "hard_drive_interface": "sata",
+    "hard_drive_interface": "ide",
     "headless": "false",
-    "iso_interface": "sata",
+    "iso_interface": "ide",
     "vboxmanage": [
       ["modifyvm", "{{.Name}}", "--memory", "1024"],
       ["modifyvm", "{{.Name}}", "--cpus", "1"],
