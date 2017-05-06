@@ -9,12 +9,6 @@
     "vboxmanage": [
       ["modifyvm", "{{.Name}}", "--memory", "1024"],
       ["modifyvm", "{{.Name}}", "--cpus", "1"],
-      ["modifyvm", "{{.Name}}", "--mouse", "ps2"],
-      ["modifyvm", "{{.Name}}", "--keyboard", "ps2"],
-      ["modifyvm", "{{.Name}}", "--audio", "none"],
-      ["modifyvm", "{{.Name}}", "--usb", "off"],
-      ["modifyvm", "{{.Name}}", "--usbehci", "off"],
-      ["modifyvm", "{{.Name}}", "--usbxhci", "off"],
       ["modifyvm", "{{.Name}}", "--nictype1", "virtio"]
     ],
     "iso_url": "http://mirror2.hs-esslingen.de/centos/6/isos/x86_64/CentOS-6.9-x86_64-netinstall.iso",
@@ -40,12 +34,6 @@
     "vboxmanage": [
       ["modifyvm", "{{.Name}}", "--memory", "1024"],
       ["modifyvm", "{{.Name}}", "--cpus", "1"],
-      ["modifyvm", "{{.Name}}", "--mouse", "ps2"],
-      ["modifyvm", "{{.Name}}", "--keyboard", "ps2"],
-      ["modifyvm", "{{.Name}}", "--audio", "none"],
-      ["modifyvm", "{{.Name}}", "--usb", "off"],
-      ["modifyvm", "{{.Name}}", "--usbehci", "off"],
-      ["modifyvm", "{{.Name}}", "--usbxhci", "off"],
       ["modifyvm", "{{.Name}}", "--nictype1", "virtio"]
     ],
     "iso_url": "http://mirror1.hs-esslingen.de/pub/Mirrors/centos/7/isos/x86_64/CentOS-7-x86_64-NetInstall-1611.iso",
