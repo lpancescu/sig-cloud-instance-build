@@ -14,7 +14,7 @@ selinux --enforcing
 timezone --utc UTC
 # The biosdevname and ifnames options ensure we get "eth0" as our interface
 # even in environments like virtualbox that emulate a real NW card
-bootloader --location=mbr --append="no_timer_check console=tty0 console=ttyS0,115200 net.ifnames=0 biosdevname=0"
+bootloader --location=mbr --append="no_timer_check console=tty0 console=ttyS0,115200n8 net.ifnames=0 biosdevname=0 elevator=noop"
 zerombr
 clearpart --all --drives=sda
 
@@ -39,7 +39,7 @@ if [ $? -eq 0 ] ; then cat > /tmp/additional-packages <<-EOF; fi
 EOF
 %end
 
-%packages
+%packages --excludedocs --instLangs=en
 deltarpm
 bash-completion
 man-pages
@@ -50,6 +50,7 @@ screen
 nfs-utils
 chrony
 yum-utils
+hyperv-daemons
 # Microcode updates cannot work in a VM
 -microcode_ctl
 # Firmware packages are not needed in a VM
@@ -161,6 +162,7 @@ chcon -u system_u -r object_r -t modules_conf_t /etc/modprobe.d/nofloppy.conf
 pushd /etc/dracut.conf.d
 # Enable VMware PVSCSI support for VMware Fusion guests.
 echo 'add_drivers+=" vmw_pvscsi "' > vmware-fusion-drivers.conf
+echo 'add_drivers+=" hv_netvsc hv_storvsc hv_utils hv_vmbus hid-hyperv "' > hyperv-drivers.conf
 # There's no floppy controller, but probing for it generates timeouts
 echo 'omit_drivers+=" floppy "' > nofloppy.conf
 popd
@@ -168,6 +170,7 @@ popd
 restorecon -f - <<EOF
 /etc/sudoers.d/vagrant
 /etc/dracut.conf.d/vmware-fusion-drivers.conf
+/etc/dracut.conf.d/hyperv-drivers.conf
 /etc/dracut.conf.d/nofloppy.conf
 EOF
 
@@ -175,4 +178,8 @@ EOF
 KERNEL_VERSION=$(rpm -q kernel --qf '%{version}-%{release}.%{arch}\n')
 dracut -f /boot/initramfs-${KERNEL_VERSION}.img ${KERNEL_VERSION}
 
+# Seal for deployment
+rm -rf /etc/ssh/ssh_host_*
+hostnamectl set-hostname localhost.localdomain
+rm -rf /etc/udev/rules.d/70-*
 %end

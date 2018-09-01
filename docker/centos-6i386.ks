@@ -3,14 +3,14 @@
 # To use this kickstart, run the following command
 # livemedia-creator --make-tar \
 #   --iso=/path/to/boot.iso  \
-#   --ks=centos-7.ks \
+#   --ks=centos-6i386.ks \
 #   --image-name=centos-root.tar.xz
 #
 # Once the image has been generated, it can be imported into docker
 # by using: cat centos-root.tar.xz | docker import -i imagename
 
 # Basic setup information
-url --url="http://mirrors.kernel.org/centos/6/os/x86_64/"
+url --url="http://mirrors.kernel.org/centos/6/os/i386/"
 install
 keyboard us
 lang en_US.UTF-8
@@ -24,8 +24,8 @@ reboot
 bootloader --location=none
 
 # Repositories to use
-repo --name="CentOS" --baseurl=http://mirror.centos.org/centos/6/os/x86_64/ --cost=100
-repo --name="Updates" --baseurl=http://mirror.centos.org/centos/6/updates/x86_64/ --cost=100
+repo --name="CentOS" --baseurl=http://mirror.centos.org/centos/6/os/i386/ --cost=100
+repo --name="Updates" --baseurl=http://mirror.centos.org/centos/6/updates/i386/ --cost=100
 
 # Disk setup
 zerombr
@@ -100,3 +100,4 @@ rm -rf /etc/sysconfig/network-scripts/ifcfg-*
 /bin/date +%Y%m%d_%H%M > /etc/BUILDTIME
 
 %end
+

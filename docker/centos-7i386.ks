@@ -10,7 +10,7 @@
 # by using: cat centos-root.tar.xz | docker import -i imagename
 
 # Basic setup information
-url --url="http://mirrors.kernel.org/centos/7/os/x86_64/"
+url --url="http://mirror.centos.org/altarch/7/os/i386/"
 install
 keyboard us
 rootpw --lock --iscrypted locked
@@ -23,9 +23,9 @@ bootloader --disable
 lang en_US
 
 # Repositories to use
-repo --name="CentOS" --baseurl=http://mirror.centos.org/centos/7/os/x86_64/ --cost=100
+repo --name="CentOS" --baseurl=http://mirror.centos.org/altarch/7/os/i386/ --cost=100
 ## Uncomment for rolling builds
-repo --name="Updates" --baseurl=http://mirror.centos.org/centos/7/updates/x86_64/ --cost=100
+repo --name="Updates" --baseurl=http://mirror.centos.org/altarch/7/updates/i386/ --cost=100
 
 # Disk setup
 zerombr
@@ -59,14 +59,7 @@ passwd
 yum-utils
 yum-plugin-ovl
 
-%end
 
-%pre
-# Pre configure tasks for Docker
-
-# Don't add the anaconda build logs to the image
-# see /usr/share/anaconda/post-scripts/99-copy-logs.ks
-touch /tmp/NOSAVE_LOGS
 %end
 
 %post --log=/anaconda-post.log
@@ -82,8 +75,7 @@ yum -y remove bind-libs bind-libs-lite dhclient dhcp-common dhcp-libs \
   grubby initscripts iproute iptables kexec-tools libcroco libgomp \
   libmnl libnetfilter_conntrack libnfnetlink libselinux-python lzo \
   libunistring os-prober python-decorator python-slip python-slip-dbus \
-  snappy sysvinit-tools which linux-firmware GeoIP firewalld-filesystem \
-  qemu-guest-agent
+  snappy sysvinit-tools which linux-firmware GeoIP firewalld-filesystem
 
 yum clean all
 
@@ -101,6 +93,7 @@ awk '(NF==0&&!done){print "override_install_langs=en_US.utf8\ntsflags=nodocs";do
     < /etc/yum.conf > /etc/yum.conf.new
 mv /etc/yum.conf.new /etc/yum.conf
 echo 'container' > /etc/yum/vars/infra
+echo -e 'i386\n' > /etc/yum/vars/basesearch
 
 
 ##Setup locale properly
@@ -111,6 +104,8 @@ echo 'container' > /etc/yum/vars/infra
 ## Remove some things we don't need
 rm -rf /var/cache/yum/x86_64
 rm -f /tmp/ks-script*
+rm -rf /var/log/anaconda
+rm -rf /tmp/ks-script*
 rm -rf /etc/sysconfig/network-scripts/ifcfg-*
 # do we really need a hardware database in a container?
 rm -rf /etc/udev/hwdb.bin

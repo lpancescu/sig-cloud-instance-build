@@ -8,8 +8,7 @@
 # Modified: Carl Thompson
 # Update: Updated to use local boot.iso instead of downloading
 # require preperation but is faster in building the image
-# Requires: lorax libvirt virt-install qemu-kvm
-#           systemctl start libvirtd
+# Requires: anaconda lorax
 #--------------------------------------------------------------------
 #### Basic VAR definitions
 USAGE="USAGE: $(basename "$0") kickstart"
@@ -27,7 +26,7 @@ if [ "$#" -ne 1 ]; then
 fi
 
 # Test for package requirements
-PACKAGES=( lorax libvirt virt-install qemu-kvm )
+PACKAGES=( anaconda-tui lorax yum-langpacks)
 for Element in "${PACKAGES[@]}"
   do
     TEST=`rpm -q --whatprovides $Element`
@@ -36,13 +35,6 @@ for Element in "${PACKAGES[@]}"
     exit 1
     fi
 done
-
-# Test for active libvirtd
-TEST=`systemctl is-active libvirtd`
-if [ "$?" -gt 0 ]
-then echo "libvirtd must be running"
-exit 1
-fi
 
 # Is the buildroot already present
 if [ -d "$BUILDROOT" ]; then
@@ -59,14 +51,11 @@ if [ -d "$BUILDROOT" ]; then
     fi
 fi
 
-# Fetch the boot.iso for the build.
-if [ ! -e "/tmp/boot-${KSNAME##*-}.iso" ]
-  then
-  curl http://mirror.centos.org/centos/"${KSNAME##*-}"/os/x86_64/images/boot.iso -o /tmp/boot-"${KSNAME##*-}".iso
-fi
-
 # Build the rootfs
-time livemedia-creator --logfile=/tmp/"$KSNAME"-"$BUILDDATE".log --make-tar --ks "$KICKSTART" --image-name="$KSNAME"-docker.tar.xz  --iso /tmp/boot-"${KSNAME##*-}".iso
+time livemedia-creator --logfile=/tmp/"$KSNAME"-"$BUILDDATE".log \
+     --no-virt --make-tar --ks "$KICKSTART" \
+     --image-name="$KSNAME"-docker.tar.xz --project "CentOS 7 Docker" \
+     --releasever "7"
 
 # Put the rootfs someplace
 mkdir -p $BUILDROOT/docker
@@ -78,10 +67,11 @@ cat << EOF > $BUILDROOT/docker/Dockerfile
 FROM scratch
 ADD $KSNAME-docker.tar.xz /
 
-LABEL name="CentOS Base Image" \\
-    vendor="CentOS" \\
-    license="GPLv2" \\
-    build-date="$BUILDDATE"
+LABEL org.label-schema.schema-version="1.0" \\
+    org.label-schema.name="CentOS Base Image" \\
+    org.label-schema.vendor="CentOS" \\
+    org.label-schema.license="GPLv2" \\
+    org.label-schema.build-date="$BUILDDATE"
 
 CMD ["/bin/bash"]
 EOF

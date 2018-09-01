@@ -10,7 +10,7 @@
 # by using: cat centos-root.tar.xz | docker import -i imagename
 
 # Basic setup information
-url --url="http://mirrors.kernel.org/centos/7/os/x86_64/"
+url --url="http://mirror.centos.org/altarch/7/os/ppc64le/"
 install
 keyboard us
 rootpw --lock --iscrypted locked
@@ -23,14 +23,15 @@ bootloader --disable
 lang en_US
 
 # Repositories to use
-repo --name="CentOS" --baseurl=http://mirror.centos.org/centos/7/os/x86_64/ --cost=100
+repo --name="CentOS" --baseurl=http://mirror.centos.org/altarch/7/os/ppc64le/ --cost=100
 ## Uncomment for rolling builds
-repo --name="Updates" --baseurl=http://mirror.centos.org/centos/7/updates/x86_64/ --cost=100
+repo --name="Updates" --baseurl=http://mirror.centos.org/altarch/7/updates/ppc64le/ --cost=100
 
 # Disk setup
 zerombr
 clearpart --all --initlabel
-part / --size 3000 --fstype ext4
+part / --fstype ext4 --size=3000
+part prepboot --fstype "PPC PReP Boot" --size=10
 
 # Package setup
 %packages --excludedocs --instLangs=en --nocore
@@ -59,14 +60,7 @@ passwd
 yum-utils
 yum-plugin-ovl
 
-%end
 
-%pre
-# Pre configure tasks for Docker
-
-# Don't add the anaconda build logs to the image
-# see /usr/share/anaconda/post-scripts/99-copy-logs.ks
-touch /tmp/NOSAVE_LOGS
 %end
 
 %post --log=/anaconda-post.log
@@ -82,8 +76,7 @@ yum -y remove bind-libs bind-libs-lite dhclient dhcp-common dhcp-libs \
   grubby initscripts iproute iptables kexec-tools libcroco libgomp \
   libmnl libnetfilter_conntrack libnfnetlink libselinux-python lzo \
   libunistring os-prober python-decorator python-slip python-slip-dbus \
-  snappy sysvinit-tools which linux-firmware GeoIP firewalld-filesystem \
-  qemu-guest-agent
+  snappy sysvinit-tools which linux-firmware GeoIP firewalld-filesystem
 
 yum clean all
 
@@ -94,23 +87,15 @@ rm -rf /etc/firewalld
 # Lock roots account, keep roots account password-less.
 passwd -l root
 
-#LANG="en_US"
-#echo "%_install_lang $LANG" > /etc/rpm/macros.image-language-conf
-
 awk '(NF==0&&!done){print "override_install_langs=en_US.utf8\ntsflags=nodocs";done=1}{print}' \
     < /etc/yum.conf > /etc/yum.conf.new
 mv /etc/yum.conf.new /etc/yum.conf
 echo 'container' > /etc/yum/vars/infra
 
-
-##Setup locale properly
-# Commenting out, as this seems to no longer be needed
-#rm -f /usr/lib/locale/locale-archive
-#localedef -v -c -i en_US -f UTF-8 en_US.UTF-8
-
 ## Remove some things we don't need
-rm -rf /var/cache/yum/x86_64
-rm -f /tmp/ks-script*
+rm -rf /var/cache/yum/*
+rm -rf /var/log/*
+rm -rf /tmp/*
 rm -rf /etc/sysconfig/network-scripts/ifcfg-*
 # do we really need a hardware database in a container?
 rm -rf /etc/udev/hwdb.bin
@@ -124,7 +109,6 @@ umount /run
 systemd-tmpfiles --create --boot
 # Make sure login works
 rm /var/run/nologin
-
 
 #Generate installtime file record
 /bin/date +%Y%m%d_%H%M > /etc/BUILDTIME
