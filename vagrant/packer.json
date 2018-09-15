@@ -1,19 +1,17 @@
 {
   "builders" : [{
     "name": "centos-6",
-    "type": "virtualbox-iso",
-    "guest_os_type": "RedHat_64",
-    "hard_drive_interface": "sata",
-    "headless": "false",
-    "iso_interface": "sata",
-    "vboxmanage": [
-      ["modifyvm", "{{.Name}}", "--memory", "1024"],
-      ["modifyvm", "{{.Name}}", "--cpus", "1"],
-      ["modifyvm", "{{.Name}}", "--nictype1", "virtio"]
-    ],
+    "type": "qemu",
+    "headless": false,
     "iso_url": "https://mirror1.hs-esslingen.de/pub/Mirrors/centos/6/isos/x86_64/CentOS-6.10-x86_64-netinstall.iso",
     "iso_checksum": "56f7b078a3b443095ba006cdc85319c691251cda98c5d73d12ef6db7aff6b4c1",
     "iso_checksum_type": "sha256",
+    "disk_size": 40000,
+    "format": "qcow2",
+    "accelerator": "kvm",
+    "vm_name": "packer6",
+    "net_device": "virtio-net",
+    "disk_interface": "virtio",
     "boot_command": [
       "<tab><spacebar>",
       "ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/centos6.ks<return>"
@@ -26,19 +24,17 @@
   },
   {
     "name": "centos-7",
-    "type": "virtualbox-iso",
-    "guest_os_type": "RedHat_64",
-    "hard_drive_interface": "sata",
-    "headless": "false",
-    "iso_interface": "sata",
-    "vboxmanage": [
-      ["modifyvm", "{{.Name}}", "--memory", "1024"],
-      ["modifyvm", "{{.Name}}", "--cpus", "1"],
-      ["modifyvm", "{{.Name}}", "--nictype1", "virtio"]
-    ],
+    "type": "qemu",
+    "headless": false,
     "iso_url": "https://mirror1.hs-esslingen.de/pub/Mirrors/centos/7/isos/x86_64/CentOS-7-x86_64-NetInstall-1804.iso",
     "iso_checksum": "937bf0a7b0932817f84f7230f15ed88911bbbd85c0c958680792b7f8d8f9c1a9",
     "iso_checksum_type": "sha256",
+    "disk_size": 40000,
+    "format": "qcow2",
+    "accelerator": "kvm",
+    "vm_name": "packer7",
+    "net_device": "virtio-net",
+    "disk_interface": "virtio",
     "boot_command": [
       "<up><tab><spacebar>",
       "inst.ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/centos7.ks<return>"
@@ -48,14 +44,6 @@
     "ssh_private_key_file": "insecure_private_key",
     "ssh_timeout": "60m",
     "shutdown_command": "sudo poweroff"
-  }],
-  "provisioners": [{
-    "type": "shell",
-    "inline": [
-      "set -e -x",
-      "sudo mount -o loop -t iso9660 VBoxGuestAdditions.iso /mnt",
-      "(cd /mnt && sudo sh ./VBoxLinuxAdditions.run)"
-    ]
   }],
   "post-processors": [{
     "type": "vagrant",

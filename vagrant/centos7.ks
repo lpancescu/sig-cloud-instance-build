@@ -16,13 +16,13 @@ timezone --utc UTC
 # even in environments like virtualbox that emulate a real NW card
 bootloader --location=mbr --append="no_timer_check console=tty0 console=ttyS0,115200n8 net.ifnames=0 biosdevname=0 elevator=noop"
 zerombr
-clearpart --all --drives=sda
+clearpart --all --drives=vda
 
 user --name=vagrant --password=vagrant
 
 part biosboot --fstype=biosboot --size=1
-part /boot --fstype xfs --size=1024 --ondisk=sda
-part pv.2 --size=1 --grow --ondisk=sda
+part /boot --fstype xfs --size=1024 --ondisk=vda
+part pv.2 --size=1 --grow --ondisk=vda
 volgroup VolGroup00 --pesize=32768 pv.2
 logvol swap --fstype swap --name=LogVol01 --vgname=VolGroup00 --size=768 --grow --maxsize=1536
 logvol / --fstype xfs --name=LogVol00 --vgname=VolGroup00 --size=1024 --grow
