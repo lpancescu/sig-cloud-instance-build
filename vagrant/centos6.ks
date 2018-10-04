@@ -15,18 +15,13 @@ timezone --utc UTC
 services --enabled ntpd,tuned
 # The biosdevname and ifnames options ensure we get "eth0" as our interface
 # even in environments like virtualbox that emulate a real NW card
-bootloader --location=mbr --append="no_timer_check console=tty0 console=ttyS0,115200n8 net.ifnames=0 biosdevname=0 elevator=noop"
+bootloader --timeout=1 --append="no_timer_check console=tty0 console=ttyS0,115200n8 net.ifnames=0 biosdevname=0 elevator=noop"
 zerombr
 clearpart --all --drives=sda
+part / --fstype=ext4 --asprimary --size=1024 --grow --ondisk=sda
 
 user --name=vagrant --password=vagrant
 
-part biosboot --fstype=biosboot --size=1
-part /boot --fstype ext4 --size=250 --ondisk=sda
-part pv.2 --size=1 --grow --ondisk=sda
-volgroup VolGroup00 --pesize=32768 pv.2
-logvol swap --fstype swap --name=LogVol01 --vgname=VolGroup00 --size=768 --grow --maxsize=1536
-logvol / --fstype ext4 --name=LogVol00 --vgname=VolGroup00 --size=1024 --grow
 reboot
 
 %pre
@@ -48,6 +43,7 @@ bzip2
 rsync
 screen
 nfs-utils
+cifs-utils
 tuned
 hyperv-daemons
 # Microcode updates cannot work in a VM
@@ -91,6 +87,12 @@ if [ $? -eq 0 ] ; then
 	yum -y install epel-release
 	yum -y install dkms
 fi
+
+# configure swap to a file
+fallocate -l 2G /swapfile
+chmod 600 /swapfile
+mkswap /swapfile
+echo "/swapfile none swap defaults 0 0" >> /etc/fstab
 
 # sudo
 echo "%vagrant ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers.d/vagrant
@@ -146,9 +148,6 @@ echo 'vag' > /etc/yum/vars/infra
 
 # Configure tuned
 tuned-adm profile virtual-guest
-
-# Configure grub to wait just 1 second before booting
-sed -i 's/^timeout=[0-9]\+$/timeout=1/' /boot/grub/grub.conf
 
 # Enable VMware PVSCSI support for VMware Fusion guests. This produces
 # a tiny increase in the image and is harmless for other environments.
