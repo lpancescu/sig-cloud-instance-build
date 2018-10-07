@@ -24,17 +24,6 @@ user --name=vagrant --password=vagrant
 
 reboot
 
-%pre
-#!/bin/sh
-:>/tmp/additional-packages
-dmidecode -s system-product-name | grep VirtualBox >&/dev/null
-if [ $? -eq 0 ] ; then cat > /tmp/additional-packages <<-EOF; fi
-	gcc
-	make
-	kernel-devel
-EOF
-%end
-
 %packages --instLangs=en
 deltarpm
 bash-completion
@@ -80,7 +69,6 @@ open-vm-tools
 -dracut-config-rescue
 # Disable kdump
 -kexec-tools
-%include /tmp/additional-packages
 
 %end
 
@@ -91,13 +79,6 @@ open-vm-tools
 #%end
 
 %post
-# VirtualBox Guest Additions need DKMS (until version 5.1.x)
-dmidecode -s system-product-name | grep VirtualBox >&/dev/null
-if [ $? -eq 0 ] ; then
-	yum -y install epel-release
-	yum -y install dkms
-fi
-
 # configure swap to a file
 fallocate -l 2G /swapfile
 chmod 600 /swapfile

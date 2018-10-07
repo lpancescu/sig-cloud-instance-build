@@ -53,6 +53,7 @@
     "type": "shell",
     "inline": [
       "set -e -x",
+      "sudo yum -y install gcc make kernel-devel",
       "sudo mount -o loop -t iso9660 VBoxGuestAdditions.iso /mnt",
       "(cd /mnt && sudo sh ./VBoxLinuxAdditions.run)"
     ]
