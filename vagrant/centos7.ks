@@ -12,45 +12,34 @@ firewall --disabled
 authconfig --enableshadow --enablemd5
 selinux --enforcing
 timezone --utc UTC
+services --enabled=vmtoolsd
 # The biosdevname and ifnames options ensure we get "eth0" as our interface
 # even in environments like virtualbox that emulate a real NW card
-bootloader --location=mbr --append="no_timer_check console=tty0 console=ttyS0,115200n8 net.ifnames=0 biosdevname=0 elevator=noop"
+bootloader --timeout=1 --append="no_timer_check console=tty0 console=ttyS0,115200n8 net.ifnames=0 biosdevname=0 elevator=noop"
 zerombr
 clearpart --all --drives=vda
+part / --fstype=ext4 --asprimary --size=1024 --grow --ondisk=vda
 
 user --name=vagrant --password=vagrant
 
-part biosboot --fstype=biosboot --size=1
-part /boot --fstype xfs --size=1024 --ondisk=vda
-part pv.2 --size=1 --grow --ondisk=vda
-volgroup VolGroup00 --pesize=32768 pv.2
-logvol swap --fstype swap --name=LogVol01 --vgname=VolGroup00 --size=768 --grow --maxsize=1536
-logvol / --fstype xfs --name=LogVol00 --vgname=VolGroup00 --size=1024 --grow
 reboot
 
-%pre
-#!/bin/sh
-:>/tmp/additional-packages
-dmidecode -s system-product-name | grep VirtualBox >&/dev/null
-if [ $? -eq 0 ] ; then cat > /tmp/additional-packages <<-EOF; fi
-	gcc
-	make
-	kernel-devel
-EOF
-%end
-
-%packages --excludedocs --instLangs=en
+%packages --instLangs=en
 deltarpm
 bash-completion
 man-pages
 bzip2
-@core
 rsync
-screen
 nfs-utils
+cifs-utils
 chrony
 yum-utils
 hyperv-daemons
+open-vm-tools
+-e2fsprogs
+-btrfs-progs
+# Vagrant boxes aren't normally visible, no need for Plymouth
+-plymouth
 # Microcode updates cannot work in a VM
 -microcode_ctl
 # Firmware packages are not needed in a VM
@@ -75,12 +64,11 @@ hyperv-daemons
 -iwl6050-firmware
 -iwl7260-firmware
 -iwl7265-firmware
+-linux-firmware
 # Don't build rescue initramfs
 -dracut-config-rescue
 # Disable kdump
 -kexec-tools
-%include /tmp/additional-packages
-
 %end
 
 # kdump needs to reserve 160MB + 2bits/4kB RAM, and automatic allocation only
@@ -90,15 +78,15 @@ hyperv-daemons
 #%end
 
 %post
-# VirtualBox Guest Additions need DKMS (until version 5.1.x)
-dmidecode -s system-product-name | grep VirtualBox >&/dev/null
-if [ $? -eq 0 ] ; then
-	yum -y install epel-release
-	yum -y install dkms
-fi
+# configure swap to a file
+fallocate -l 2G /swapfile
+chmod 600 /swapfile
+mkswap /swapfile
+echo "/swapfile none swap defaults 0 0" >> /etc/fstab
 
 # sudo
-echo "%vagrant ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers.d/vagrant
+echo "%vagrant ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/vagrant
+chmod 0440 /etc/sudoers.d/vagrant
 
 # Fix for https://github.com/CentOS/sig-cloud-instance-build/issues/38
 cat > /etc/sysconfig/network-scripts/ifcfg-eth0 << EOF
@@ -150,9 +138,6 @@ EOF
 :>/etc/machine-id
 
 echo 'vag' > /etc/yum/vars/infra
-
-# Configure grub to wait just 1 second before booting
-sed -i 's/^GRUB_TIMEOUT=[0-9]\+$/GRUB_TIMEOUT=1/' /etc/default/grub && grub2-mkconfig -o /boot/grub2/grub.cfg
 
 # Blacklist the floppy module to avoid probing timeouts
 echo blacklist floppy > /etc/modprobe.d/nofloppy.conf
