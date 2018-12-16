@@ -62,15 +62,13 @@ yum-utils
 -linux-firmware
 # Don't build rescue initramfs
 -dracut-config-rescue
-# Disable kdump
--kexec-tools
 %end
 
 # kdump needs to reserve 160MB + 2bits/4kB RAM, and automatic allocation only
 # works on systems with at least 2GB RAM (which excludes most Vagrant boxes)
 # CBS doesn't support %addon yet https://bugs.centos.org/view.php?id=12169
-#%addon com_redhat_kdump --disable
-#%end
+%addon com_redhat_kdump --disable
+%end
 
 %post
 # configure swap to a file
