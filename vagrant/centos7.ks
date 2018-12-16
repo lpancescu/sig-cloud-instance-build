@@ -33,8 +33,6 @@ nfs-utils
 cifs-utils
 chrony
 yum-utils
--e2fsprogs
--btrfs-progs
 # Vagrant boxes aren't normally visible, no need for Plymouth
 -plymouth
 # Microcode updates cannot work in a VM
