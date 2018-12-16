@@ -12,7 +12,6 @@ firewall --disabled
 authconfig --enableshadow --enablemd5
 selinux --enforcing
 timezone --utc UTC
-services --enabled=vmtoolsd
 # The biosdevname and ifnames options ensure we get "eth0" as our interface
 # even in environments like virtualbox that emulate a real NW card
 bootloader --timeout=1 --append="no_timer_check console=tty0 console=ttyS0,115200n8 net.ifnames=0 biosdevname=0 elevator=noop"
@@ -34,8 +33,6 @@ nfs-utils
 cifs-utils
 chrony
 yum-utils
-hyperv-daemons
-open-vm-tools
 -e2fsprogs
 -btrfs-progs
 # Vagrant boxes aren't normally visible, no need for Plymouth
@@ -145,17 +142,12 @@ chcon -u system_u -r object_r -t modules_conf_t /etc/modprobe.d/nofloppy.conf
 
 # Customize the initramfs
 pushd /etc/dracut.conf.d
-# Enable VMware PVSCSI support for VMware Fusion guests.
-echo 'add_drivers+=" vmw_pvscsi "' > vmware-fusion-drivers.conf
-echo 'add_drivers+=" hv_netvsc hv_storvsc hv_utils hv_vmbus hid-hyperv "' > hyperv-drivers.conf
 # There's no floppy controller, but probing for it generates timeouts
 echo 'omit_drivers+=" floppy "' > nofloppy.conf
 popd
 # Fix the SELinux context of the new files
 restorecon -f - <<EOF
 /etc/sudoers.d/vagrant
-/etc/dracut.conf.d/vmware-fusion-drivers.conf
-/etc/dracut.conf.d/hyperv-drivers.conf
 /etc/dracut.conf.d/nofloppy.conf
 EOF
 
