@@ -8,8 +8,7 @@
     "iso_interface": "sata",
     "vboxmanage": [
       ["modifyvm", "{{.Name}}", "--memory", "1024"],
-      ["modifyvm", "{{.Name}}", "--cpus", "1"],
-      ["modifyvm", "{{.Name}}", "--nictype1", "virtio"]
+      ["modifyvm", "{{.Name}}", "--cpus", "1"]
     ],
     "iso_url": "https://mirror1.hs-esslingen.de/pub/Mirrors/centos/6/isos/x86_64/CentOS-6.10-x86_64-netinstall.iso",
     "iso_checksum": "56f7b078a3b443095ba006cdc85319c691251cda98c5d73d12ef6db7aff6b4c1",
@@ -33,8 +32,7 @@
     "iso_interface": "sata",
     "vboxmanage": [
       ["modifyvm", "{{.Name}}", "--memory", "1024"],
-      ["modifyvm", "{{.Name}}", "--cpus", "1"],
-      ["modifyvm", "{{.Name}}", "--nictype1", "virtio"]
+      ["modifyvm", "{{.Name}}", "--cpus", "1"]
     ],
     "iso_url": "http://mirror2.hs-esslingen.de/centos/7.6.1810/isos/x86_64/CentOS-7-x86_64-NetInstall-1810.iso",
     "iso_checksum": "19d94274ef856c4dfcacb2e7cfe4be73e442a71dd65cc3fb6e46db826040b56e",
@@ -48,15 +46,6 @@
     "ssh_private_key_file": "insecure_private_key",
     "ssh_timeout": "60m",
     "shutdown_command": "sudo poweroff"
-  }],
-  "provisioners": [{
-    "type": "shell",
-    "inline": [
-      "set -e -x",
-      "sudo yum -y install gcc make kernel-devel",
-      "sudo mount -o loop -t iso9660 VBoxGuestAdditions.iso /mnt",
-      "(cd /mnt && sudo sh ./VBoxLinuxAdditions.run)"
-    ]
   }],
   "post-processors": [{
     "type": "vagrant",

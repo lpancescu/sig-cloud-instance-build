@@ -30,11 +30,9 @@ man-pages
 bzip2
 @core
 rsync
-screen
 nfs-utils
 cifs-utils
 tuned
-hyperv-daemons
 # Microcode updates cannot work in a VM
 -microcode_ctl
 # Firmware packages are not needed in a VM
@@ -131,21 +129,10 @@ echo 'vag' > /etc/yum/vars/infra
 # Configure tuned
 tuned-adm profile virtual-guest
 
-# Enable VMware PVSCSI support for VMware Fusion guests. This produces
-# a tiny increase in the image and is harmless for other environments.
-pushd /etc/dracut.conf.d
-echo 'add_drivers+=" vmw_pvscsi "' > vmware-fusion-drivers.conf
-echo 'add_drivers+=" hv_netvsc hv_storvsc hv_utils hv_vmbus hid-hyperv "' > hyperv-drivers.conf
-popd
 # Fix the SELinux context of the new files
 restorecon -f - <<EOF
 /etc/sudoers.d/vagrant
-/etc/dracut.conf.d/vmware-fusion-drivers.conf
-/etc/dracut.conf.d/hyperv-drivers.conf
 EOF
-# Rerun dracut for the installed kernel (not the running kernel):
-KERNEL_VERSION=$(rpm -q kernel --qf '%{version}-%{release}.%{arch}\n')
-dracut -f /boot/initramfs-${KERNEL_VERSION}.img ${KERNEL_VERSION}
 
 # Seal for deployment
 rm -rf /etc/ssh/ssh_host_*
