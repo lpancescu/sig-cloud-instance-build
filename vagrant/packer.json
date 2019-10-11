@@ -2,6 +2,9 @@
   "builders" : [{
     "name": "centos-6",
     "type": "qemu",
+    "qemuargs": [
+      ["-m", "1024M"]
+    ],
     "headless": false,
     "iso_url": "https://mirror1.hs-esslingen.de/pub/Mirrors/centos/6/isos/x86_64/CentOS-6.10-x86_64-netinstall.iso",
     "iso_checksum": "56f7b078a3b443095ba006cdc85319c691251cda98c5d73d12ef6db7aff6b4c1",
@@ -25,6 +28,9 @@
   {
     "name": "centos-7",
     "type": "qemu",
+    "qemuargs": [
+      ["-m", "1024M"]
+    ],
     "headless": false,
     "iso_url": "http://mirror2.hs-esslingen.de/centos/7.6.1810/isos/x86_64/CentOS-7-x86_64-NetInstall-1810.iso",
     "iso_checksum": "19d94274ef856c4dfcacb2e7cfe4be73e442a71dd65cc3fb6e46db826040b56e",

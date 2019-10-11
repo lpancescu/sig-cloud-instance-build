@@ -12,13 +12,12 @@ firewall --disabled
 authconfig --enableshadow --enablemd5
 selinux --enforcing
 timezone --utc UTC
-services --enabled=vmtoolsd
 # The biosdevname and ifnames options ensure we get "eth0" as our interface
 # even in environments like virtualbox that emulate a real NW card
 bootloader --timeout=1 --append="no_timer_check console=tty0 console=ttyS0,115200n8 net.ifnames=0 biosdevname=0 elevator=noop"
 zerombr
 clearpart --all --drives=vda
-part / --fstype=ext4 --asprimary --size=1024 --grow --ondisk=vda
+part / --fstype=xfs --asprimary --size=1024 --grow --ondisk=vda
 
 user --name=vagrant --password=vagrant
 
@@ -34,10 +33,6 @@ nfs-utils
 cifs-utils
 chrony
 yum-utils
-hyperv-daemons
-open-vm-tools
--e2fsprogs
--btrfs-progs
 # Vagrant boxes aren't normally visible, no need for Plymouth
 -plymouth
 # Microcode updates cannot work in a VM
@@ -67,19 +62,17 @@ open-vm-tools
 -linux-firmware
 # Don't build rescue initramfs
 -dracut-config-rescue
-# Disable kdump
--kexec-tools
 %end
 
 # kdump needs to reserve 160MB + 2bits/4kB RAM, and automatic allocation only
 # works on systems with at least 2GB RAM (which excludes most Vagrant boxes)
 # CBS doesn't support %addon yet https://bugs.centos.org/view.php?id=12169
-#%addon com_redhat_kdump --disable
-#%end
+%addon com_redhat_kdump --disable
+%end
 
 %post
-# configure swap to a file
-fallocate -l 2G /swapfile
+# configure swap to a file (fallocate doesn't work with c7 xfs)
+dd if=/dev/zero of=/swapfile bs=1M count=2048
 chmod 600 /swapfile
 mkswap /swapfile
 echo "/swapfile none swap defaults 0 0" >> /etc/fstab
@@ -145,17 +138,12 @@ chcon -u system_u -r object_r -t modules_conf_t /etc/modprobe.d/nofloppy.conf
 
 # Customize the initramfs
 pushd /etc/dracut.conf.d
-# Enable VMware PVSCSI support for VMware Fusion guests.
-echo 'add_drivers+=" vmw_pvscsi "' > vmware-fusion-drivers.conf
-echo 'add_drivers+=" hv_netvsc hv_storvsc hv_utils hv_vmbus hid-hyperv "' > hyperv-drivers.conf
 # There's no floppy controller, but probing for it generates timeouts
 echo 'omit_drivers+=" floppy "' > nofloppy.conf
 popd
 # Fix the SELinux context of the new files
 restorecon -f - <<EOF
 /etc/sudoers.d/vagrant
-/etc/dracut.conf.d/vmware-fusion-drivers.conf
-/etc/dracut.conf.d/hyperv-drivers.conf
 /etc/dracut.conf.d/nofloppy.conf
 EOF
 

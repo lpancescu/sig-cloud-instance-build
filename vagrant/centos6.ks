@@ -24,17 +24,6 @@ user --name=vagrant --password=vagrant
 
 reboot
 
-%pre
-#!/bin/sh
-:>/tmp/additional-packages
-dmidecode -s system-product-name | grep VirtualBox >&/dev/null
-if [ $? -eq 0 ] ; then cat > /tmp/additional-packages <<-EOF; fi
-	gcc
-	make
-	kernel-devel
-EOF
-%end
-
 %packages
 deltarpm
 man-pages
@@ -45,7 +34,6 @@ screen
 nfs-utils
 cifs-utils
 tuned
-hyperv-daemons
 # Microcode updates cannot work in a VM
 -microcode_ctl
 # Firmware packages are not needed in a VM
@@ -76,17 +64,10 @@ hyperv-daemons
 -zd1211-firmware
 # Disable kdump
 -kexec-tools
-%include /tmp/additional-packages
 
 %end
 
 %post
-# VirtualBox Guest Additions need DKMS (until version 5.1.x)
-dmidecode -s system-product-name | grep VirtualBox >&/dev/null
-if [ $? -eq 0 ] ; then
-	yum -y install epel-release
-	yum -y install dkms
-fi
 
 # configure swap to a file
 fallocate -l 2G /swapfile
@@ -150,27 +131,10 @@ echo 'vag' > /etc/yum/vars/infra
 # Configure tuned
 tuned-adm profile virtual-guest
 
-# Enable VMware PVSCSI support for VMware Fusion guests. This produces
-# a tiny increase in the image and is harmless for other environments.
-pushd /etc/dracut.conf.d
-echo 'add_drivers+=" vmw_pvscsi "' > vmware-fusion-drivers.conf
-echo 'add_drivers+=" hv_netvsc hv_storvsc hv_utils hv_vmbus hid-hyperv "' > hyperv-drivers.conf
-popd
-
-# Fix for issue 156, CentOS 6 not booting on HyperV
-echo blacklist hyperv_fb > /etc/modprobe.d/hyperv_fb.conf
-
 # Fix the SELinux context of the new files
 restorecon -f - <<EOF
 /etc/sudoers.d/vagrant
-/etc/dracut.conf.d/vmware-fusion-drivers.conf
-/etc/dracut.conf.d/hyperv-drivers.conf
-/etc/modprobe.d/hyperv_fb.conf
 EOF
-
-# Rerun dracut for the installed kernel (not the running kernel):
-KERNEL_VERSION=$(rpm -q kernel --qf '%{version}-%{release}.%{arch}\n')
-dracut -f /boot/initramfs-${KERNEL_VERSION}.img ${KERNEL_VERSION}
 
 # Seal for deployment
 rm -rf /etc/ssh/ssh_host_*
