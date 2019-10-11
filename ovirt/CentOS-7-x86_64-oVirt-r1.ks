@@ -10,6 +10,10 @@ lang en_US.UTF-8
 repo --name "os" --baseurl="http://mirror.centos.org/centos/7/os/x86_64/" --cost=100
 repo --name "updates" --baseurl="http://mirror.centos.org/centos/7/updates/x86_64/" --cost=100
 repo --name "extras" --baseurl="http://mirror.centos.org/centos/7/extras/x86_64/" --cost=100
+
+# oVirt specific repos
+repo --name "centos-ovirt43" --baseurl="http://mirror.centos.org/centos/7/virt/x86_64/ovirt-4.3/" --cost=100
+
 # Network information
 network  --bootproto=dhcp
 network  --hostname=localhost.localdomain
@@ -106,7 +110,7 @@ echo "RUN_FIRSTBOOT=NO" > /etc/sysconfig/firstboot
 yum clean all
 
 # XXX instance type markers - MUST match CentOS Infra expectation
-echo 'genclo' > /etc/yum/vars/infra
+echo 'ovirt' > /etc/yum/vars/infra
 
 # chance dhcp client retry/timeouts to resolve #6866
 cat  >> /etc/dhcp/dhclient.conf << EOF
@@ -124,6 +128,8 @@ mkdir -p /var/cache/yum
 # reorder console entries
 sed -i 's/console=tty0/console=tty0 console=ttyS0,115200n8/' /boot/grub2/grub.cfg
 
+# oVirt specific service
+systemctl enable ovirt-guest-agent.service
 %end
 
 %packages
@@ -168,6 +174,9 @@ yum-utils
 -libertas-sd8787-firmware
 -libertas-usb8388-firmware
 -plymouth
+
+# oVirt specific packages
+ovirt-guest-agent-common
 
 %end
 
