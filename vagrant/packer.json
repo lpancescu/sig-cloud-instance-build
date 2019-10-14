@@ -50,6 +50,32 @@
     "ssh_private_key_file": "insecure_private_key",
     "ssh_timeout": "60m",
     "shutdown_command": "sudo poweroff"
+  },
+  {
+    "name": "centos-8",
+    "type": "qemu",
+    "qemuargs": [
+      ["-m", "1536M"]
+    ],
+    "headless": false,
+    "iso_url": "http://mirror2.hs-esslingen.de/centos/8.0.1905/isos/x86_64/CentOS-8-x86_64-1905-boot.iso",
+    "iso_checksum": "a7993a0d4b7fef2433e0d4f53530b63c715d3aadbe91f152ee5c3621139a2cbc",
+    "iso_checksum_type": "sha256",
+    "disk_size": 40000,
+    "format": "qcow2",
+    "accelerator": "kvm",
+    "vm_name": "packer8",
+    "net_device": "virtio-net",
+    "disk_interface": "virtio",
+    "boot_command": [
+      "<up><tab><spacebar>",
+      "inst.ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/centos8.ks<return>"
+    ],
+    "http_directory": ".",
+    "ssh_username": "vagrant",
+    "ssh_private_key_file": "insecure_private_key",
+    "ssh_timeout": "60m",
+    "shutdown_command": "sudo poweroff"
   }],
   "post-processors": [{
     "type": "vagrant",
