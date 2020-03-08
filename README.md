@@ -5,7 +5,7 @@ CentOS Vagrant images with the VirtualBox Guest Additions, using Packer.
 The intention is to follow the official kickstart files as close as
 possible; using a branch allows easy merging from the upstream repo.*
 
-This git repo contains kickstart files that define how the various CentOS Cloud Instances are built. These kickstarts are parsed withi `virt-install`. Every kickstart must be named in the following convention:
+This git repo contains kickstart files that define how the various CentOS Cloud Instances are built. These kickstarts are parsed with `virt-install`. Every kickstart must be named in the following convention:
 
 ```
 CentOS-<release ver>-<arch>-<target>-<tag>.ks
