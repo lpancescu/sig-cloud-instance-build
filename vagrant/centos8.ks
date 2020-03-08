@@ -1,5 +1,5 @@
-#url --mirrorlist=http://mirrorlist.centos.org/?release=8&arch=x86_64&repo=BaseOS&infra=stock
-#repo --name=AppStream --mirrorlist=http://mirrorlist.centos.org/?release=8&arch=x86_64&repo=AppStream&infra=stock
+url --mirrorlist=http://mirrorlist.centos.org/?release=8&arch=x86_64&repo=BaseOS&infra=stock
+repo --name=AppStream --mirrorlist=http://mirrorlist.centos.org/?release=8&arch=x86_64&repo=AppStream&infra=stock
 text
 keyboard --vckeymap us
 lang en_US
